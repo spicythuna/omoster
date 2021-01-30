@@ -110,9 +110,22 @@ updatePoints = async (id, points) => {
     await docClient.update(params).promise();
 }
 
+enoughPoints = async (id) => {
+    const params = {
+        TableName: process.env.TABLE_NAME,
+        Key: {
+            id: id
+        }
+    };
+
+    const data = await docClient.get(params).promise();
+    return data;
+}
+
 module.exports = {
     register,
     getPoints,
     redeemDaily,
-    updatePoints
+    updatePoints,
+    enoughPoints
 };

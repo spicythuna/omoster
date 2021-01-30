@@ -1,4 +1,24 @@
 headsOrTails = (message, side, bet) => {
+    enoughPoints(message.author.id)
+        .then(data => {
+            const currentPoints = parseInt(data.Item.omopoints);
+            if (currentPoints >= parseInt(bet) && currentPoints !== 0) {
+                return headsOrTailsUtil(message, side, bet);
+            }
+            else if (currentPoints <= 0) {
+                message.reply("you must bet at least 1 omopoint.");
+            }
+            else {
+                message.reply("you do not have enough omopoints.");
+            }
+        })
+        .catch(error => {
+            message.reply("i broken");
+            console.log("HT ERROR: " + JSON.stringify(error, null, 2));
+        });
+};
+
+headsOrTailsUtil = (message, side, bet) => {
     const id = message.author.id;
     const rand = Math.floor(Math.random() * (2 - 0) + 0);
 
@@ -22,7 +42,7 @@ headsOrTails = (message, side, bet) => {
                 console.log("HEADSORTAILS_LOSE ERROR: " + JSON.stringify(error, null, 2));
             });
     }
-};
+}
 
 module.exports = {
     headsOrTails

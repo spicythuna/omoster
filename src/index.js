@@ -35,7 +35,8 @@ client.on("message", async message => {
     }
 });
 
-schedule.scheduleJob("11 18 * * *", async () => {
+// Resets the daily timer
+schedule.scheduleJob("0 1 * * *", async () => {
     try {
         const scanParams = {
             TableName: process.env.TABLE_NAME,
