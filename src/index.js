@@ -1,11 +1,10 @@
 require('dotenv').config();
-
-// const schedule =  require("node-schedule");
-
 const Discord = require("discord.js");
+const AWS = require("aws-sdk");
+const schedule =  require("node-schedule");
+
 const client = new Discord.Client();
 
-const AWS = require("aws-sdk");
 AWS.config.update({
     region: process.env.AWS_REGION,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -15,24 +14,44 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 const prefix = "?";
 
-// schedule.scheduleJob('0 4 * * *', () => {
-//     const params = {
-//         TableName: process.env.TABLE_NAME,
-//         KeyConditionExpression: "id = :id",
-//         ExpressionAttributeValues: {
-//             ":id": id
-//         }
-//     };
+schedule.scheduleJob("57 17 * * *", async () => {
+    try {
+        const scanParams = {
+            TableName: process.env.TABLE_NAME,
+            FilterExpression: "#rd = :rd",
+            ExpressionAttributeNames: {
+                "#rd": "redeemedDaily"
+            },
+            ExpressionAttributeValues: {
+                ":rd": true
+            }
+        };
 
-//     docClient.query(params, (error, data) => {
-//         if (data.Count == 0) {
-//             message.reply("you have not registered yet.")
-//         }
-//         else {
-//             message.reply(`you currently have ${data.Items[0].omopoints} omopoints.`)
-//         }
-//     });
-// })
+        const data = await docClient.scan(scanParams).promise();
+
+        for (const item of data.Items) {
+            const updateParams = {
+                TableName: process.env.TABLE_NAME,
+                Key: {
+                    id: item.id
+                },
+                UpdateExpression: "set redeemedDaily = :rd",
+                ExpressionAttributeValues: {
+                    ":rd": false,
+                }
+            };
+
+            await docClient.update(updateParams).promise();
+        };
+
+        //Log that dailies reset
+        //console.log("dailies reset.")
+    }
+    catch (error) {
+        //Log that dailies are unable to reset
+        //console.log("DAILYRESET ERROR: " + JSON.stringify(error, null, 2));
+    }
+})
 
 client.on("message", async message => {
     // Just for funsies
@@ -81,7 +100,7 @@ client.on("message", async message => {
 
         docClient.query(params, (error, data) => {
             if (error) {
-                message.reply("i broken");
+                message.reply("i broken 1");
             }
             else {
                 if (data.Count == 0) {
@@ -128,13 +147,12 @@ client.on("message", async message => {
                 message.reply(`daily redeemed! You currently have ${data.Attributes.omopoints} omopoints.`);
             }
         }
-        catch(error) {
+        catch (error) {
             if (error.code == "ConditionalCheckFailedException") {
                 message.reply("don't get ahead of yourself. You've already redeemed it.");
             }
             else {
-                message.reply("i broken");
-                console.log("DAILY ERROR: " + JSON.stringify(error));
+                message.reply("i broken 2");
             }
         }
     }
