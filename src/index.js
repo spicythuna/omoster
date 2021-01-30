@@ -35,6 +35,7 @@ const prefix = "?";
 // })
 
 client.on("message", async message => {
+    // Just for funsies
     if (message.content.startsWith("hi")) {
         message.reply("shut up");
     }
@@ -45,11 +46,6 @@ client.on("message", async message => {
     const commandBody = message.content.slice(prefix.length);
     const args = commandBody.split(" ");
     const command = args.shift().toLowerCase();
-
-    if (command === "ping") {
-        const timeTaken = Date.now() - message.createdTimestamp;
-        message.reply(`this message had a latency of ${timeTaken}ms.`)
-    }
 
     const id = message.author.id;
 
@@ -66,7 +62,7 @@ client.on("message", async message => {
     
         docClient.put(params, (error) => {
             if (error) {
-                message.reply("unable to register. You are already registered, idiot.");
+                message.reply("you are ALREADY registered, idiot.");
             }
             else {
                 message.reply("you have successfully registered.");
@@ -84,54 +80,63 @@ client.on("message", async message => {
         };
 
         docClient.query(params, (error, data) => {
-            if (data.Count == 0) {
-                message.reply("you have not registered yet.");
+            if (error) {
+                message.reply("i broken");
             }
             else {
-                message.reply(`you currently have ${data.Items[0].omopoints} omopoints.`);
+                if (data.Count == 0) {
+                    message.reply("HELLO? DID YOU EVEN REGISTER YET?");
+                }
+                else {
+                    message.reply(`you currently have ${data.Items[0].omopoints} omopoints.`);
+                }
             }
         });
     }
 
     if (command === "daily") {
-        let params = {
-            TableName: process.env.TABLE_NAME,
-            KeyConditionExpression: "id = :id",
-            ExpressionAttributeValues: {
-                ":id": id
-            }
-        }
+        try {
+            const queryParams = {
+                TableName: process.env.TABLE_NAME,
+                KeyConditionExpression: "id = :id",
+                ExpressionAttributeValues: {
+                    ":id": id
+                }
+            };
 
-        docClient.query(params, (error, data) => {
+            const data = await docClient.query(queryParams).promise();
             if (data.Count == 0) {
-                message.reply("you have not registered yet.")
+                message.reply("HELLO? DID YOU EVEN REGISTER YET?");
             }
             else {
-                params = {
+                const updateParams = {
                     TableName: process.env.TABLE_NAME,
                     Key: {
                         id: id
                     },
-                    ConditionExpression: "redeemedDaily = :c",
-                    UpdateExpression: "set omopoints = omopoints + :o, redeemedDaily = :rd",
+                    ConditionExpression: "redeemedDaily = :rdf",
+                    UpdateExpression: "set omopoints = omopoints + :op, redeemedDaily = :rdt",
                     ExpressionAttributeValues: {
-                        ":c": false,
-                        ":o": 1,
-                        ":rd": true
+                        ":rdf": false,
+                        ":op": 1,
+                        ":rdt": true
                     },
                     ReturnValues: "UPDATED_NEW"
                 };
-        
-                docClient.update(params, (error, data) => {
-                    if (error) {
-                        message.reply("don't get ahead of yourself. You've already redeemed it.");
-                    }
-                    else {
-                        message.reply(`daily redeemed! You currently have ${data.Attributes.omopoints} omopoints.`);
-                    }
-                })
+
+                const data = await docClient.update(updateParams).promise()
+                message.reply(`daily redeemed! You currently have ${data.Attributes.omopoints} omopoints.`);
             }
-        });
+        }
+        catch(error) {
+            if (error.code == "ConditionalCheckFailedException") {
+                message.reply("don't get ahead of yourself. You've already redeemed it.");
+            }
+            else {
+                message.reply("i broken");
+                console.log("DAILY ERROR: " + JSON.stringify(error));
+            }
+        }
     }
 });
 
