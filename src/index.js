@@ -1,7 +1,6 @@
 require('dotenv').config();
 const database = require("./database");
 const games = require("./games");
-const schedule =  require("node-schedule");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const prefix = "?";
@@ -18,61 +17,25 @@ client.on("message", async message => {
     const args = commandBody.split(" ");
     const command = args.shift().toLowerCase();
 
-    if (command === "register") {
+    if (command === "register" && args.length === 0) {
         register(message);
     }
 
-    if (command === "points") {
+    if (command === "points" && args.length === 0) {
         getPoints(message);
     }
 
-    if (command === "daily") {
+    if (command === "daily" && args.length === 0) {
         redeemDaily(message);
     }
 
-    if (command === "heads" || command === "tails") {
+    if ((command === "heads" || command === "tails") && args.length === 1) {
         headsOrTails(message, command, args[0]);
     }
-});
 
-// Resets the daily timer
-schedule.scheduleJob("0 1 * * *", async () => {
-    try {
-        const scanParams = {
-            TableName: process.env.TABLE_NAME,
-            FilterExpression: "#rd = :rd",
-            ExpressionAttributeNames: {
-                "#rd": "redeemedDaily"
-            },
-            ExpressionAttributeValues: {
-                ":rd": true
-            }
-        };
-
-        const data = await docClient.scan(scanParams).promise();
-
-        for (const item of data.Items) {
-            const updateParams = {
-                TableName: process.env.TABLE_NAME,
-                Key: {
-                    id: item.id
-                },
-                UpdateExpression: "set redeemedDaily = :rd",
-                ExpressionAttributeValues: {
-                    ":rd": false,
-                }
-            };
-
-            await docClient.update(updateParams).promise();
-        };
-
-        //Log that dailies reset
-        //console.log("dailies reset.")
-    }
-    catch (error) {
-        //Log that dailies are unable to reset
-        //console.log("DAILYRESET ERROR: " + JSON.stringify(error, null, 2));
-    }
+    // if (command === "prediction") {
+    //     prediction(message);
+    // }
 });
 
 client.login(process.env.BOT_TOKEN);

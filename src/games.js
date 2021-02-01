@@ -1,45 +1,55 @@
+// prediction = (message) => {
+    
+// };
+
 headsOrTails = (message, side, bet) => {
-    enoughPoints(message.author.id)
-        .then(data => {
-            const currentPoints = parseInt(data.Item.omopoints);
-            if (currentPoints >= parseInt(bet) && currentPoints !== 0) {
-                return headsOrTailsUtil(message, side, bet);
-            }
-            else if (currentPoints <= 0) {
-                message.reply("you must bet at least 1 omopoint.");
-            }
-            else {
-                message.reply("you do not have enough omopoints.");
-            }
-        })
-        .catch(error => {
-            message.reply("i broken");
-            console.log("HT ERROR: " + JSON.stringify(error, null, 2));
-        });
+    if (!isNaN(bet) && Number.isInteger(parseFloat(bet)) && (parseInt(bet) > 0)) {
+        enoughPoints(message.author.id)
+            .then(data => {
+                const check = parseInt(bet);
+                const availablePoints = parseInt(data.Item.omopoints);
+                if ((check <= availablePoints) && (check > 0)) {
+                    return headsOrTailsUtil(message, side, check);
+                }
+                else {
+                    message.reply(`not enough omopoints. You have ${availablePoints} omopoints available.`);
+                }
+            })
+            .catch(error => {
+                message.reply("i broken 3");
+                console.log("HEADSORTAILS_MAIN ERROR: " + JSON.stringify(error, null, 2));
+            });
+    }
+    else {
+        message.reply("must bet at least 1 omopoint.")
+    }
 };
 
 headsOrTailsUtil = (message, side, bet) => {
     const id = message.author.id;
     const rand = Math.floor(Math.random() * (2 - 0) + 0);
+    const flipped = rand === 0 ? "heads" : "tails";
 
-    if ((rand === 0 && side === "heads") || (rand == 1 && side === "tails")) {
+    if (flipped === side) {
         const points = bet * 2;
         updatePoints(id, points)
             .then(() => {
-                message.reply(`you guessed correctly! You won ${points} omopoints.`);
+                message.reply(`CORRECT! It was ${flipped.toUpperCase()}. You won ${points} omopoints.`);
             })
             .catch(error => {
-                console.log("HEADSORTAILS_WIN ERROR: " + JSON.stringify(error, null, 2));
+                message.reply("i broken 4");
+                // console.log("HEADSORTAILS_WIN ERROR: " + JSON.stringify(error, null, 2));
             });
     }
     else {
         const points = -bet;
         updatePoints(id, points)
             .then (() => {
-                message.reply(`wrong! You lost ${Math.abs(points)} omopoints.`)
+                message.reply(`WRONG! It was ${flipped.toUpperCase()}. You lost ${Math.abs(points)} omopoints.`)
             })
             .catch (error => {
-                console.log("HEADSORTAILS_LOSE ERROR: " + JSON.stringify(error, null, 2));
+                message.reply("i broken 5");
+                // console.log("HEADSORTAILS_LOSE ERROR: " + JSON.stringify(error, null, 2));
             });
     }
 }
