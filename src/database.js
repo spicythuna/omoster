@@ -1,5 +1,4 @@
 const AWS = require("aws-sdk");
-const schedule =  require("node-schedule");
 AWS.config.update({
     region: process.env.AWS_REGION,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -7,94 +6,40 @@ AWS.config.update({
 });
 const docClient = new AWS.DynamoDB.DocumentClient();
 
-register = async message => {
+register = async id => {
     const params = {
         TableName: process.env.TABLE_NAME,
         Item: {
-            id: message.author.id,
+            id: id,
             omopoints: 0,
             redeemedDaily: false
         },
         ConditionExpression: "attribute_not_exists(id)"
     };
 
-    await docClient.put(params).promise()
-        .then(() => {
-            message.reply("you have successfully registered.");
-        })
-        .catch(error => {
-            message.reply("you are ALREADY registered, idiot.");
-        });
+    const data = await docClient.put(params).promise();
+    return data;
 };
 
-getPoints = message => {
-    const params = {
+redeemDaily = async id => {
+    const updateParams = {
         TableName: process.env.TABLE_NAME,
-        KeyConditionExpression: "id = :id",
+        Key: {
+            id: id
+        },
+        ConditionExpression: "redeemedDaily = :rdf",
+        UpdateExpression: "set omopoints = omopoints + :op, redeemedDaily = :rdt",
         ExpressionAttributeValues: {
-            ":id": message.author.id
-        }
+            ":rdf": false,
+            ":op": 1,
+            ":rdt": true
+        },
+        ReturnValues: "UPDATED_NEW"
     };
 
-    docClient.query(params, (error, data) => {
-        if (error) {
-            message.reply("i broken 1");
-        }
-        else {
-            if (data.Count === 0) {
-                message.reply("HELLO? DID YOU EVEN REGISTER YET?");
-            }
-            else {
-                message.reply(`you currently have ${data.Items[0].omopoints} omopoints.`);
-            }
-        }
-    });
+    const data = await docClient.update(updateParams).promise();
+    return data;
 };
-
-redeemDaily = async message => {
-    try {
-        const queryParams = {
-            TableName: process.env.TABLE_NAME,
-            KeyConditionExpression: "id = :id",
-            ExpressionAttributeValues: {
-                ":id": message.author.id
-            }
-        };
-
-        const data = await docClient.query(queryParams).promise();
-
-        if (data.Count == 0) {
-            message.reply("HELLO? DID YOU EVEN REGISTER YET?");
-        }
-        else {
-            const updateParams = {
-                TableName: process.env.TABLE_NAME,
-                Key: {
-                    id: message.author.id
-                },
-                ConditionExpression: "redeemedDaily = :rdf",
-                UpdateExpression: "set omopoints = omopoints + :op, redeemedDaily = :rdt",
-                ExpressionAttributeValues: {
-                    ":rdf": false,
-                    ":op": 1,
-                    ":rdt": true
-                },
-                ReturnValues: "UPDATED_NEW"
-            };
-
-            const data = await docClient.update(updateParams).promise()
-            message.reply(`daily redeemed! You currently have ${data.Attributes.omopoints} omopoints.`);
-        }
-    }
-    catch (error) {
-        if (error.code == "ConditionalCheckFailedException") {
-            message.reply("don't get ahead of yourself. You've already redeemed it.");
-        }
-        else {
-            message.reply("i broken 2");
-        }
-    }
-}
 
 updatePoints = async (id, points) => {
     const params = {
@@ -105,13 +50,15 @@ updatePoints = async (id, points) => {
         UpdateExpression: "set omopoints = omopoints + :op",
         ExpressionAttributeValues: {
             ":op": points
-        }
+        },
+        ReturnValues: "UPDATED_NEW"
     };
 
-    await docClient.update(params).promise();
+    const data = await docClient.update(params).promise();
+    return data;
 }
 
-enoughPoints = async (id) => {
+getUser = async id => {
     const params = {
         TableName: process.env.TABLE_NAME,
         Key: {
@@ -121,53 +68,11 @@ enoughPoints = async (id) => {
 
     const data = await docClient.get(params).promise();
     return data;
-}
-
-
-// Resets the daily timer
-schedule.scheduleJob("0 0 * * *", async () => {
-    try {
-        const scanParams = {
-            TableName: process.env.TABLE_NAME,
-            FilterExpression: "#rd = :rd",
-            ExpressionAttributeNames: {
-                "#rd": "redeemedDaily"
-            },
-            ExpressionAttributeValues: {
-                ":rd": true
-            }
-        };
-
-        const data = await docClient.scan(scanParams).promise();
-
-        for (const item of data.Items) {
-            const updateParams = {
-                TableName: process.env.TABLE_NAME,
-                Key: {
-                    id: item.id
-                },
-                UpdateExpression: "set redeemedDaily = :rd",
-                ExpressionAttributeValues: {
-                    ":rd": false,
-                }
-            };
-
-            await docClient.update(updateParams).promise();
-        };
-
-        //Log that dailies reset
-        // console.log("dailies reset.")
-    }
-    catch (error) {
-        //Log that dailies are unable to reset
-        // console.log("DAILYRESET ERROR: " + JSON.stringify(error, null, 2));
-    }
-});
+};
 
 module.exports = {
     register,
-    getPoints,
     redeemDaily,
     updatePoints,
-    enoughPoints
+    getUser
 };
