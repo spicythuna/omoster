@@ -67,7 +67,6 @@ client.on("message", async message => {
                 message.reply("please ?register for omoster.");
             }
             else {
-                console.log("error: " + error);
                 message.reply("i broken - daily");
             }
         };
@@ -84,7 +83,6 @@ client.on("message", async message => {
             }
         }
         catch (error) {
-            console.log('error: ' + JSON.stringify(error, null, 2));
             if (error.code === "NotEnoughPointsError") {
                 message.reply("you do not have enough omopoints.");
             }

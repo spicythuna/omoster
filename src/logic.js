@@ -19,13 +19,17 @@ daily = async id => {
 
 headsOrTails = async (id, call, bet) => {
     try {
-        if (isAPositiveInteger(bet)) {
+        if (isAPositiveInteger(bet) || bet === "all") {
             const response = await getUser(id);
 
             let availablePoints;
             if (response && response.Item) {
                 availablePoints = response.Item.omopoints;
 
+                if (bet === "all") {
+                    bet = availablePoints;
+                }
+                
                 if (isValidBet(availablePoints, bet)) {
                     const result = headsOrTailsGame(call, bet);
                     await updatePoints(id, result.earnings);
