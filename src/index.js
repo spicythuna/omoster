@@ -2,6 +2,7 @@ require('dotenv').config();
 const database = require("./database");
 const logic = require("./logic");
 const Discord = require("discord.js");
+const { isAPositiveInteger } = require('./util');
 const client = new Discord.Client();
 const prefix = "?";
 const codebase = "https://github.com/spicythuna/omoster";
@@ -97,78 +98,70 @@ client.on("message", async message => {
             }
         };
     }
+
     else if (command === "prediction" && args.length === 0) {
-        const filter = (message) => !message.author.bot;
-        const options = {
-            max: 1,
-            time: 60000
-        };
-        const reactions = [
-            "1️⃣",
-            "2️⃣",
-            "3️⃣",
-            "4️⃣"
-        ];
-        let prediction = {};
-        message.reply("what is the prediction?")
-            .then(() => {
-                return message.channel.awaitMessages(filter, options);
-            })
-            .then(collected => {
-                prediction.question = collected.array()[0].content;
-                return message.reply("what is the wager?")
-            })
-            .then(() => {
-                return message.channel.awaitMessages(filter, options);
-            })
-            .then(collected => {
-                const bet = collected.array()[0].content;;
-                if (isAPositiveInteger(bet)) {
-                    prediction.bet = bet;
-                    return message.reply("list at most four options seperated by spaces (e.g. \"nej ando pinkdoge azuredragon013\").");
-                }
-                else {
-                    throw { code : "InvalidBetError" };
-                }
-            })
-            .then(() => {
-                return message.channel.awaitMessages(filter, options);
-            })
-            .then(collected => {
-                prediction.options = collected.array()[0].content.split(" ");
+        try {
+            let filter = (message) => (message.author.id === id);
+            let options = {
+                max: 1,
+                time: 30000
+            };
+            const reactions = [
+                "1️⃣",
+                "2️⃣",
+                "3️⃣",
+                "4️⃣"
+            ];
+            let prediction = {};
+            let collected;
 
-                let predictionDescription = "";
-                prediction.options.forEach((option, index) => {
-                    predictionDescription += `${reactions[index]}: ${option}\n`;
-                });
+            message.reply("what is the prediction?");
+            collected = await message.channel.awaitMessages(filter, options);
+            prediction.question = collected.array()[0].content;
 
-                let predictionEmbed = new Discord.MessageEmbed()
-                    .setTitle(`${prediction.question}`)
-                    .setDescription(predictionDescription);
-                return message.channel.send(predictionEmbed);
-            })
-            .then(predEmbed => {
-                for (let i = 0; i < prediction.options.length; i++) {
-                    predEmbed.react(reactions[i]);
-                }
+            // message.reply("what is your wager?");
+            // collected = await message.channel.awaitMessages(filter, options);
+            // const bet = collected.array()[0].content;
+            // if (!isAPositiveInteger(bet)) {
+            //     throw { code: "InvalidNumberError" };
+            // }
+            // prediction.bet = bet;
 
-                const filter = (reaction, user) => {
-                    return reactions.includes(reaction.emoji.name) && !user.bot
-                };
-                const options = {
-                    time: 600000
-                };
-                return predEmbed.awaitReactions(filter, options);
-            })
-            .catch(error => {
-                if (error.code === "InvalidBetError") {
-                    message.reply("could not create prediction. Must bet at least 1 omopoint.")
-                }
-                else {
-                    message.reply("i broken - prediction");
-                    console.log("error: " + error);
-                }
+            message.reply("list at most four options seperated by spaces (e.g. \"nej ando pinkdoge azuredragon013\").");
+            collected = await message.channel.awaitMessages(filter, options);
+            prediction.options = collected.array()[0].content.split(" ");
+
+            let predictionDescription = "";
+            prediction.options.forEach((option, index) => {
+                predictionDescription += `${reactions[index]}: ${option}\n`;
             });
+
+            let predictionEmbed = new Discord.MessageEmbed()
+                .setTitle(`${prediction.question}`)
+                .setDescription(predictionDescription);
+            const predEmbed = await message.channel.send(predictionEmbed);
+
+            for (let i = 0; i < prediction.options.length; i++) {
+                predEmbed.react(reactions[i]);
+            }
+
+            filter = (reaction, user) => {
+                return reactions.includes(reaction.emoji.name) && !user.bot
+            };
+            options = {
+                time: 600000
+            };
+            collected = predEmbed.awaitReactions(filter, options);
+            message.reply("?prediction is still a WIP. This is as far as the command goes.")
+        }
+        catch (error) {
+            if (error.code === "InvalidNumberError") {
+                message.reply("must bet at least 1 omopoint.");
+            }
+            else {
+                message.reply("i broken - prediction");
+            }
+        }
     }
 });
 
