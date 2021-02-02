@@ -17,8 +17,7 @@ register = async id => {
         ConditionExpression: "attribute_not_exists(id)"
     };
 
-    const data = await docClient.put(params).promise();
-    return data;
+    await docClient.put(params).promise();
 };
 
 redeemDaily = async id => {
@@ -37,8 +36,8 @@ redeemDaily = async id => {
         ReturnValues: "UPDATED_NEW"
     };
 
-    const data = await docClient.update(updateParams).promise();
-    return data;
+    const response = await docClient.update(updateParams).promise();
+    return response;
 };
 
 updatePoints = async (id, points) => {
@@ -54,8 +53,8 @@ updatePoints = async (id, points) => {
         ReturnValues: "UPDATED_NEW"
     };
 
-    const data = await docClient.update(params).promise();
-    return data;
+    const response = await docClient.update(params).promise();
+    return response;
 }
 
 getUser = async id => {
@@ -66,8 +65,8 @@ getUser = async id => {
         }
     };
 
-    const data = await docClient.get(params).promise();
-    return data;
+    const response = await docClient.get(params).promise();
+    return response;
 };
 
 module.exports = {
