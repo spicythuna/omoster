@@ -7,5 +7,6 @@ isValidBet = (availablePoints, bet) => {
 }
 
 module.exports = {
-    isAPositiveInteger
+    isAPositiveInteger,
+    isValidBet
 };

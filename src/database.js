@@ -31,7 +31,7 @@ redeemDaily = async id => {
         UpdateExpression: "set omopoints = omopoints + :op, redeemedDaily = :rdt",
         ExpressionAttributeValues: {
             ":rdf": false,
-            ":op": 1,
+            ":op": 100,
             ":rdt": true
         },
         ReturnValues: "UPDATED_NEW"
