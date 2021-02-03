@@ -6,7 +6,7 @@ AWS.config.update({
 });
 const docClient = new AWS.DynamoDB.DocumentClient();
 
-register = async id => {
+createUser = async id => {
     const params = {
         TableName: process.env.TABLE_NAME,
         Item: {
@@ -70,7 +70,7 @@ getUser = async id => {
 };
 
 module.exports = {
-    register,
+    createUser,
     redeemDaily,
     updatePoints,
     getUser
