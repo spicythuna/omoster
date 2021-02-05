@@ -7,7 +7,7 @@ prediction = async message => {
         let filter = (msg) => (msg.author.id === message.author.id);
         let options = {
             max: 1,
-            time: 10000
+            time: 30000
         };
         const reactions = [
             "1️⃣",
@@ -20,7 +20,7 @@ prediction = async message => {
         };
         let collected, collectedArray;
 
-        message.reply("what is the prediction?");
+        message.reply("what are you asking?");
         collected = await message.channel.awaitMessages(filter, options);
         if (collected.size === 0) {
             throw { code: "NoResponseError" };
@@ -58,8 +58,8 @@ prediction = async message => {
             predictionDescription += `${reactions[index]}: ${option}\n`;
         });
         prediction.id = Math.floor(Math.random() * 1000000).toString();
-        predictionDescription += `\nTo end prediction: ?endpred ${prediction.id} <winning number>`;
-        predictionDescription += `\nTo cancel prediction: ?endpred ${prediction.id}`;
+        //predictionDescription += `\nTo end poll: ?endpred ${prediction.id} <winning number>`;
+        //predictionDescription += `\nTo cancel prediction: ?endpred ${prediction.id}`;
 
         //DM ID to user
 
@@ -71,7 +71,7 @@ prediction = async message => {
         for (let i = 0; i < prediction.options.length; i++) {
             predEmbed.react(reactions[i]);
         }
-        message.reply("?prediction is still a WIP. This is as far as the command goes.");
+        message.reply("?poll is still a WIP. This is as far as the command goes.");
 
         for (let i = prediction.options.length; i < 4; i++) {
             prediction.options.push(null);
@@ -82,27 +82,27 @@ prediction = async message => {
             return reactions.includes(reaction.emoji.name) && !user.bot
         };    
         options = {
-            time: 10000
+            time: 60000
         };
         collected = await predEmbed.awaitReactions(filter, options);
         //console.log("collected: " + JSON.stringify(collected, null, 2));
     }
     catch (error) {
         if (error.code === "InvalidNumberError") {
-            message.reply("must bet at least 1 omopoint. Prediction cancelled.");
+            message.reply("must bet at least 1 omopoint. Poll cancelled.");
         }
         else if (error.code === "NoResponseError") {
-            message.reply("no response collected. Prediction cancelled.");
+            message.reply("no response collected. Poll cancelled.");
         }
         else if (error.code === "NotEnoughOptionsError") {
-            message.reply("must list at least 2 options. Prediction cancelled.");
+            message.reply("must list at least 2 options. Poll cancelled.");
         }
         else if (error.code === "TooManyOptionsError" ) {
-            message.reply("must list at most 4 options. Prediction cancelled.");
+            message.reply("must list at most 4 options. Poll cancelled.");
         }
         else {
             console.log("prediction error: " + error, null, 2);
-            message.reply("i broken - prediction");
+            message.reply("i broken - poll");
         }
     }
 };
@@ -110,11 +110,11 @@ prediction = async message => {
 endPrediction = async (message, id) => {
     try {
         await deletePrediction(id);
-        message.reply(`prediction ${id} ended.`);
+        message.reply(`poll ${id} ended.`);
     }
     catch (error) {
         console.log("error: " + error);
-        message.reply("i broken - endprediction");
+        message.reply("i broken - endpoll");
     }
 };
 

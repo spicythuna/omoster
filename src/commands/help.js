@@ -14,7 +14,7 @@ const instructions =
     //misc commands
     "__**MISC:**__\n" +
     "**?yesno <question> | ?yn <question>:**\task omoster a yes/no question\n" +
-    "**?prediction | ?pred:**\tpoll a question to the server\n" +
+    "**?poll:**\tpoll a question to the server\n" +
     "**?pick <options seperated by spaces>:**\tlet omoster pick for u\n" +
     "**?code:**\tlink to github";
 

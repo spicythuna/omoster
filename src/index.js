@@ -45,11 +45,11 @@ client.on("message", async message => {
         blackjack(message, args[0]);
     }
 
-    else if ((command === "prediction" || command === "pred") && args.length === 0) {
+    else if (command === "poll" && args.length === 0) {
         prediction(message);
     }
 
-    else if (command === "endpred" && args.length === 1) {
+    else if (command === "endpoll" && args.length === 1) {
         endPrediction(message, args[0]);
     }
 
