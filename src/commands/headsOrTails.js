@@ -36,7 +36,7 @@ headsOrTailsGame = (call, bet) => {
     if (call === "h") {
         call = "heads";
     }
-    else {
+    else if (call === "t") {
         call = "tails";
     }
 
