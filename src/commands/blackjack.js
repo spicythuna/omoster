@@ -1,18 +1,28 @@
 const Discord = require("discord.js");
 const { Deck } = require("../models/Deck");
-const { isValidBet } = require("../util");
+const { BJResponse } = require("../models/BJResponse");
+const { isAValidBet } = require("../util");
+const { updatePoints } = require("../database");
 
 blackjack = async (message, bet) => {
     try {
         const validBet = await isAValidBet(message.author.id, bet);
-        const result = await startBlackjackGame(message);
+        const result = await blackjackGame(message, validBet);
+        if (result.win === "player") {
+            message.reply(`you won ${result.earnings} omopoints!`);
+        }
+        else if (result.win === "tie") {
+            message.reply(`it's a tie! Your omopoints have been returned.`);
+        }
+        else {
+            message.reply(`you lost ${Math.abs(result.earnings)} omopoints.`);
+        }
+        await updatePoints(message.author.id, result.earnings);
     }
     catch (error) {
-        if (error.code === "NoResponseError") {
-            message.reply("no response collected. Blackjack cancelled.");
-        }
-        else if (error.code === "InvalidAnswerError") {
-            message.reply("invalid response. Blackjack cancelled.");
+        if (error.code === "TimedOutError") {
+            message.reply("ran out of time. i'm taking ur bet anyways!");
+            await updatePoints(message.author.id, error.bet);
         }
         else {
             console.log("error: " + error);
@@ -21,12 +31,13 @@ blackjack = async (message, bet) => {
     }
 };
 
-startBlackjackGame = async message => {
+blackjackGame = async (message, validBet) => {
     try {
         let deck = new Deck();
         let player = {
             total: 0,
-            cards: []
+            cards: [],
+            aceCount: 0
         };
         let dealer = {
             total: 0,
@@ -37,31 +48,24 @@ startBlackjackGame = async message => {
         const filter = (msg) => (msg.author.id === message.author.id);
         const options = {
             max: 1,
-            time: 10000
+            time: 30000
         };
-        let end = false, collected, answer, card;
+        let username = message.author.username, end = false, collected, card, response, blackjackEmbed;
         while (!end) {
-            let blackjackDescription = "**Dealer's Hand:** \n" +
-                `❔\n` +
-                `${dealer.cards[1].suit}${dealer.cards[1].rank}\n\n` +
-                "**Your Hand:** \n";
-            player.cards.forEach(card => {
-                blackjackDescription += `${card.suit}${card.rank}\n`;
-            })
-            blackjackDescription += `=${player.total}` +
-                "\n\nhit or stay";
-            let blackjackEmbed = new Discord.MessageEmbed()
-                .setTitle(`${message.author.username}'s Blackjack Game`)
-                .setDescription(blackjackDescription);
-            await message.reply(blackjackEmbed);
+            blackjackEmbed = await displayGame(username, player, dealer, true);
+            await message.channel.send(blackjackEmbed);
 
-            collected = await message.channel.awaitMessages(filter, options);
-            if (collected.size === 0) {
-                return Promise.reject({ code: "NoResponseError" });
+            let answer = "";
+            while (answer !== "hit" && answer !== "stay") {
+                message.reply("hit or stay?");
+                collected = await message.channel.awaitMessages(filter, options);
+                answer = collected.array()[0].content;
             }
-            answer = collected.array()[0].content;
             if (answer !== "hit" && answer !== "stay") {
-                return Promise.reject({ code: "InvalidAnswerError" });
+                return Promise.reject({
+                    code: "TimedOutError",
+                    bet: -validBet
+                });
             }
             
             if (answer === "hit") {
@@ -78,8 +82,10 @@ startBlackjackGame = async message => {
                         player.aceCount--;
                     }
                     else {
-                        message.reply(`you lost! Your total was ${player.total}.`);
-                        end = true;
+                        blackjackEmbed = await displayGame(username, player, dealer, false);
+                        await message.channel.send(blackjackEmbed);
+                        response = new BJResponse("dealer", -validBet);
+                        return response;
                     }
                 }
             }
@@ -88,21 +94,43 @@ startBlackjackGame = async message => {
             }
         }
 
-        end = false;
-        while (!end) {
-            // if (dealer)
+        while (dealer.total < 17) {
+            card = deck.cards.pop();
+            dealer.cards.push(card);
+            dealer.total += card.value;
+            if (card.rank === "A" && dealer.total > 21) {
+                dealer.total -= 10;
+            }
         }
+        blackjackEmbed = await displayGame(username, player, dealer, false);
+        await message.channel.send(blackjackEmbed);
+
+        if (dealer.total > 21) {
+            response = new BJResponse("player", validBet);
+        }
+        else if (dealer.total > player.total) {
+            response = new BJResponse("dealer", -validBet);
+        }
+        else if (dealer.total === player.total) {
+            response = new BJResponse("tie", 0);
+        }
+        else {
+            response = new BJResponse("player", validBet);
+        }
+        return response;
     }
     catch (error) {
         return Promise.reject(error);
     };
-
 };
 
 dealCards = (deck, player, dealer) => {
     let playerCard, dealerCard;
     for (let i = 0; i < 2; i++) {
         playerCard = deck.cards.pop();
+        if (playerCard.rank === "A") {
+            player.aceCount++;
+        }
         dealerCard = deck.cards.pop();
         deck.count -= 2;
         player.cards.push(playerCard);
@@ -110,6 +138,31 @@ dealCards = (deck, player, dealer) => {
     }
     player.total += (player.cards[0].value + player.cards[1].value);
     dealer.total += (dealer.cards[0].value + dealer.cards[1].value);
+};
+
+displayGame = async (username, player, dealer, hide) => {
+    let blackjackDescription = "**Dealer's Hand:**\n";
+
+    if (hide) {
+        blackjackDescription += `❔\n${dealer.cards[1].suit}${dealer.cards[1].rank}\n`;
+    }
+    else {
+        dealer.cards.forEach(card => {
+            blackjackDescription += `${card.suit}${card.rank}\n`;
+        });
+    }
+
+    blackjackDescription += "\n**Your Hand:**\n";
+    player.cards.forEach(card => {
+        blackjackDescription += `${card.suit}${card.rank}\n`;
+    });
+    if (!hide) {
+        blackjackDescription += `\n**Results:**\nDealer: ${dealer.total}\nYou: ${player.total}`;
+    }
+    let blackjackEmbed = new Discord.MessageEmbed()
+        .setTitle(`Blackjack - ${username}`)
+        .setDescription(blackjackDescription);
+    return blackjackEmbed;
 };
 
 module.exports = {

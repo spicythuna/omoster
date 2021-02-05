@@ -45,11 +45,11 @@ headsOrTailsGame = (call, bet) => {
 
     let earnings, win;
     if (flipped === call) {
-        earnings = parseInt(bet);
+        earnings = bet;
         win = true;
     }
     else {
-        earnings = parseInt(-bet);
+        earnings = -bet;
         win = false;
     }
     

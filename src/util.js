@@ -17,7 +17,7 @@ isAValidBet = async (id, bet) => {
                 return Promise.reject({ code: "NotEnoughPointsError" });
             }
 
-            return bet;
+            return parseInt(bet);
         }
         else {
             return Promise.reject({ code: "NotRegisteredError" });
