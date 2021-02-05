@@ -1,17 +1,17 @@
 const answers = [
     //yes responses
-    "do it you pussy",
+    "yes",
+    "sure why not",
     "yes if u hate urself",
-    "do it u won't",
-    "bet",
+    "YASSSSSSS",
     "i asked ando and he said sure",
 
     //no responses
+    "nah",
     "wtf no",
-    "pls no don't do it yamete",
-    "that's a hard no from me ur sick in the head you fuck",
-    "just go to sleep",
-    "sidney said yes so you should definitely not do it",
+    "it's a hard no from me sir",
+    "no",
+    "sidney said yes so it's a definite no",
 
     //funny responses
     "uh i dunno but u should take a shot for asking that",

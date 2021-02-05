@@ -7,7 +7,7 @@ register = async message => {
     }
     catch (error) {
         if (error.code === "ConditionalCheckFailedException") {
-            message.reply("you have ALREADY registered.");
+            message.reply("dude ur already registered...");
         }
         else {
             console.log("register error: " + error);
