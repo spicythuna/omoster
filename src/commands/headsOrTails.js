@@ -33,8 +33,16 @@ headsOrTails = async (message, call, bet) => {
 };
 
 headsOrTailsGame = (call, bet) => {
+    if (call === "h") {
+        call = "heads";
+    }
+    else {
+        call = "tails";
+    }
+
     const rand = Math.floor(Math.random() * (2 - 0) + 0);
     const flipped = rand === 0 ? "heads" : "tails";
+
     let earnings, win;
     if (flipped === call) {
         earnings = parseInt(bet);
@@ -44,6 +52,7 @@ headsOrTailsGame = (call, bet) => {
         earnings = parseInt(-bet);
         win = false;
     }
+    
     const response = new HTResponse(win, flipped, earnings);
     return response;
 };

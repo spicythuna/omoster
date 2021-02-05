@@ -29,35 +29,35 @@ client.on("message", async message => {
         register(message);
     }
 
-    else if (command === "points" && args.length === 0) {
+    else if ((command === "points" || command === "p") && args.length === 0) {
         points(message);
     }
 
-    else if (command === "daily" && args.length === 0) {
+    else if ((command === "daily" || command === "d") && args.length === 0) {
         daily(message);
     }
 
-    else if ((command === "heads" || command === "tails") && args.length === 1) {
+    else if ((command === "heads" || command === "tails" || command === "h" || command === "t") && args.length === 1) {
         headsOrTails(message, command, args[0]);
     }
 
-    else if (command === "blackjack" && args.length === 1) {
+    else if ((command === "blackjack" || command === "bj") && args.length === 1) {
         blackjack(message, args[0]);
     }
 
-    else if (command === "prediction" && args.length === 0) {
+    else if ((command === "prediction" || command === "pred") && args.length === 0) {
         prediction(message);
     }
 
-    else if (command === "endprediction" && args.length === 1) {
+    else if (command === "endpred" && args.length === 1) {
         endPrediction(message, args[0]);
     }
 
-    else if (command === "sacrifice" && args.length === 0) {
-        sacrifice(message);
+    else if ((command === "sacrifice" || command === "s") && args.length > 0) {
+        sacrifice(message, args);
     }
 
-    else if (command === "decide" && args.length === 0) {
+    else if (command === "yesno" || command === "yn") {
         decide(message);
     }
 });

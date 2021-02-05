@@ -1,24 +1,24 @@
 const answers = [
-    //yes
+    //yes responses
     "do it you pussy",
     "yes if u hate urself",
     "do it u won't",
     "bet",
     "i asked ando and he said sure",
-    "(ﾉ^ヮ^)ﾉ・ﾟ✧Y・ﾟ✧E・ﾟ✧S・ﾟ✧ ",
 
-    //no
+    //no responses
     "wtf no",
     "pls no don't do it yamete",
     "that's a hard no from me ur sick in the head you fuck",
     "just go to sleep",
     "sidney said yes so you should definitely not do it",
 
-    //funny
+    //funny responses
     "uh i dunno but u should take a shot for asking that",
     "ask again when i care",
     "i know the answer but i'm not gonna tell u",
-    "why don't u go fuck urself instead"
+    "why don't u go fuck urself instead",
+    "kys"
 ];
 
 decide = message => {
