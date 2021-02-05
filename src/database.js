@@ -8,7 +8,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 
 createUser = async id => {
     const params = {
-        TableName: process.env.TABLE_NAME,
+        TableName: process.env.OMOPOINTS_TABLE_NAME,
         Item: {
             id: id,
             omopoints: 0,
@@ -22,7 +22,7 @@ createUser = async id => {
 
 redeemDaily = async id => {
     const updateParams = {
-        TableName: process.env.TABLE_NAME,
+        TableName: process.env.OMOPOINTS_TABLE_NAME,
         Key: {
             id: id
         },
@@ -42,7 +42,7 @@ redeemDaily = async id => {
 
 updatePoints = async (id, points) => {
     const params = {
-        TableName: process.env.TABLE_NAME,
+        TableName: process.env.OMOPOINTS_TABLE_NAME,
         Key: {
             id: id
         },
@@ -59,7 +59,7 @@ updatePoints = async (id, points) => {
 
 getUser = async id => {
     const params = {
-        TableName: process.env.TABLE_NAME,
+        TableName: process.env.OMOPOINTS_TABLE_NAME,
         Key: {
             id: id
         }
@@ -69,9 +69,39 @@ getUser = async id => {
     return response;
 };
 
+createPrediction = async p => {
+    const params = {
+        TableName: process.env.PREDICTIONS_TABLE_NAME,
+        Item: {
+            id: p.id,
+            prediction: p.question,
+            numOfOptions: p.numOfOptions,
+            option1: p.options[0],
+            option2: p.options[1],
+            option3: p.options[2],
+            option4: p.options[3]
+        }
+    }
+
+    await docClient.put(params).promise();
+};
+
+deletePrediction = async id => {
+    const params = {
+        TableName: process.env.PREDICTIONS_TABLE_NAME,
+        Key: {
+            id: id
+        }
+    };
+
+    await docClient.delete(params).promise();
+};
+
 module.exports = {
     createUser,
     redeemDaily,
     updatePoints,
-    getUser
+    getUser,
+    createPrediction,
+    deletePrediction
 };

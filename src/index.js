@@ -1,6 +1,5 @@
 require('dotenv').config();
-const database = require("./database");
-const logic = require("./logic");
+const modules = require("./commands/modules");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 const prefix = "?";
@@ -44,6 +43,18 @@ client.on("message", async message => {
 
     else if (command === "prediction" && args.length === 0) {
         prediction(message);
+    }
+
+    else if (command === "endprediction" && args.length === 1) {
+        endPrediction(message, args[0]);
+    }
+
+    else if (command === "sacrifice" && args.length === 0) {
+        sacrifice(message);
+    }
+
+    else if (command === "decide" && args.length === 0) {
+        decide(message);
     }
 });
 
