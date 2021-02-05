@@ -21,6 +21,10 @@ client.on("message", async message => {
         message.channel.send(`check out the codebase at ${codebase}`);
     }
 
+    else if (command === "help" && args.length === 0) {
+        help(message); 
+    }
+
     else if (command === "register" && args.length === 0) {
         register(message);
     }
