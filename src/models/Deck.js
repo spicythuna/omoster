@@ -4,7 +4,7 @@ const { Card } = require("../models/Card");
 function Deck() {
     this.count = 52;
     // Deck is currently valued for blackjack
-    this.deck = [
+    this.cards = [
         new Card("♥️", "A", 11),
         new Card("♦️", "A", 11),
         new Card("♣️", "A", 11),
@@ -71,15 +71,15 @@ function Deck() {
         new Card("♠️", "K", 10)
     ];
     this.init = function () {
-        let currentIndex = this.deck.length, tempValue, randomIndex;
+        let currentIndex = this.cards.length, tempValue, randomIndex;
 
         while (currentIndex !== 0) {
             randomIndex = Math.floor(Math.random() * currentIndex);
             currentIndex -= 1;
 
-            tempValue = this.deck[currentIndex];
-            this.deck[currentIndex] = this.deck[randomIndex];
-            this.deck[randomIndex] = tempValue;
+            tempValue = this.cards[currentIndex];
+            this.cards[currentIndex] = this.cards[randomIndex];
+            this.cards[randomIndex] = tempValue;
         }
     }
     this.init();

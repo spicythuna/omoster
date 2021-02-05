@@ -58,8 +58,10 @@ prediction = async message => {
             predictionDescription += `${reactions[index]}: ${option}\n`;
         });
         prediction.id = Math.floor(Math.random() * 1000000).toString();
-        predictionDescription += `\nTo end prediction: ?endprediction ${prediction.id} <winning number>`;
-        predictionDescription += `\nTo cancel prediction: ?endprediction ${prediction.id}`;
+        predictionDescription += `\nTo end prediction: ?endpred ${prediction.id} <winning number>`;
+        predictionDescription += `\nTo cancel prediction: ?endpred ${prediction.id}`;
+
+        //DM ID to user
 
         let predictionEmbed = new Discord.MessageEmbed()
             .setTitle(`${prediction.question}`)
