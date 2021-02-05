@@ -1,10 +1,10 @@
-sacrifice = async (message, args) => {
+pick = async (message, args) => {
     try {
         if (args.length === 1) {
             throw { code: "NotEnoughOptionsError"};
         }
         const chosen = args[Math.floor(Math.random() * args.length)];
-        message.reply(`${chosen} has been chosen as sacrifice.`);
+        message.reply(`i pick ${chosen}`);
     }
     catch (error) {
         if (error.code === "NotEnoughOptionsError") {
@@ -18,5 +18,5 @@ sacrifice = async (message, args) => {
 };
 
 module.exports = {
-    sacrifice
+    pick
 };

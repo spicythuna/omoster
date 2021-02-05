@@ -75,8 +75,14 @@ blackjackGame = async (message, validBet) => {
                 }
                 player.cards.push(card);
                 player.total += card.value;
-
-                if (player.total > 21) {
+                
+                if (player.total === 21) {
+                    blackjackEmbed = await displayGame(username, player, dealer, false);
+                    await message.channel.send(blackjackEmbed);
+                    response = new BJResponse("player", validBet);
+                    return response;
+                }
+                else if (player.total > 21) {
                     if (player.aceCount > 0) {
                         player.total -= 10;
                         player.aceCount--;

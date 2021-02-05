@@ -6,7 +6,7 @@ const help =  require("./help");
 const points = require("./points");
 const prediction = require("./prediction");
 const register = require("./register");
-const sacrifice = require("./sacrifice");
+const pick = require("./pick");
 
 module.exports = {
     blackjack,
@@ -17,5 +17,5 @@ module.exports = {
     points,
     prediction,
     register,
-    sacrifice
+    pick
 };

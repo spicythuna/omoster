@@ -53,8 +53,8 @@ client.on("message", async message => {
         endPrediction(message, args[0]);
     }
 
-    else if ((command === "sacrifice" || command === "s") && args.length > 0) {
-        sacrifice(message, args);
+    else if (command === "pick" && args.length > 0) {
+        pick(message, args);
     }
 
     else if (command === "yesno" || command === "yn") {
