@@ -21,7 +21,7 @@ blackjack = async (message, bet) => {
     }
     catch (error) {
         if (error.code === "TimedOutError") {
-            message.reply("ran out of time. i'm taking ur bet anyways!");
+            message.reply("ran out of time. taking ur bet anyways, sucka!");
             await updatePoints(message.author.id, error.bet);
         }
         else {
@@ -56,16 +56,16 @@ blackjackGame = async (message, validBet) => {
             await message.channel.send(blackjackEmbed);
 
             let answer = "";
-            while (answer !== "hit" && answer !== "stay") {
-                message.reply("hit or stay?");
+            while (answer !== "hit" && answer !== "stand") {
+                message.reply("hit or stand?");
                 collected = await message.channel.awaitMessages(filter, options);
+                if (collected.array().length === 0) {
+                    return Promise.reject({
+                        code: "TimedOutError",
+                        bet: -validBet
+                    });
+                }
                 answer = collected.array()[0].content;
-            }
-            if (answer !== "hit" && answer !== "stay") {
-                return Promise.reject({
-                    code: "TimedOutError",
-                    bet: -validBet
-                });
             }
             
             if (answer === "hit") {

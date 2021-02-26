@@ -1,5 +1,3 @@
-const schedule =  require("node-schedule");
-
 const AWS = require("aws-sdk");
 AWS.config.update({
     region: process.env.AWS_REGION,
@@ -11,7 +9,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 resetDaily = async () => {
     try {
         const scanParams = {
-            TableName: process.env.TABLE_NAME,
+            TableName: process.env.OMOPOINTS_TABLE_NAME,
             FilterExpression: "#rd = :rd",
             ExpressionAttributeNames: {
                 "#rd": "redeemedDaily"
@@ -25,7 +23,7 @@ resetDaily = async () => {
 
         for (const item of data.Items) {
             const updateParams = {
-                TableName: process.env.TABLE_NAME,
+                TableName: process.env.OMOPOINTS_TABLE_NAME,
                 Key: {
                     id: item.id
                 },

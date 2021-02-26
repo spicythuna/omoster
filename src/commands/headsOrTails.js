@@ -9,7 +9,7 @@ headsOrTails = async (message, call, bet) => {
         const result = headsOrTailsGame(call, validBet);
         await updatePoints(id, result.earnings);
         if (result.win) {
-            message.reply(`CORRECT! It was ${result.flipped.toUpperCase()}. You won ${result.earnings * 2} omopoints.`);
+            message.reply(`CORRECT! It was ${result.flipped.toUpperCase()}. You won ${result.earnings} omopoints.`);
         }
         else {
             message.reply(`WRONG! It was ${result.flipped.toUpperCase()}. You lost ${Math.abs(result.earnings)} omopoints.`);
